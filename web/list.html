@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+    <script src="js/vue.js"></script>
+    <script src="element-ui/lib/index.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC&amp;display=swap" rel="stylesheet">
+    <style>
+        *{
+            font-family: 'Noto Serif SC', serif;
+        }
+    </style>
+</head>
+<body>
+    <div id = "main">
+        <b style="color: steelblue; font-size: 30px">商品列表</b>
+        <div style="float: right">
+            <el-button type="primary" @click="showAddCommodity()">添加商品</el-button>
+        </div>
+        <div style="width: 1150px; height: 70px;">
+            <p style="font-size: 17px;margin-left: 50px;margin-bottom: 0;">价格区间查询：</p>
+            <el-slider
+                    v-model="value"
+                    range
+                    :max=maxRange
+                    style="width: 963px; margin-left: 100px"
+                    @change="priceSearch()">
+            </el-slider>
+            <el-form :inline="true" :rules="rules1" ref="formSearch" :model="formSearch" class="demo-form-inline" style="float: right" @submit.native.prevent>
+                <el-form-item label="输入商品名查询商品" prop="name" @keyup.enter.native="nameSearch()">
+                    <el-input type="text" v-model="formSearch.name"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="nameSearch()">名称查询</el-button>
+                    <el-button type="primary" @click="searchReset()">重置名称及价格查询</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+            <el-table :data="tableData">
+                <el-table-column prop="id" label="编号" width="50">
+                </el-table-column>
+                <el-table-column prop="name" label="名称" width="250">
+                </el-table-column>
+                <el-table-column prop="price" label="价格" width="100">
+                </el-table-column>
+                <el-table-column prop="describe" label="描述" width="400">
+                </el-table-column>
+                <el-table-column prop="keyWord" label="关键字">
+                </el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="props">
+                        <el-button type="warning" @click="showEditCommodity(props.row)">编辑</el-button>
+                        <el-button type="danger" @click="deleteCommodity(props.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-dialog title="添加商品" :visible.sync="dialogTableVisible4add" @close="resetForm('addForm')">
+                <el-form :model="formData" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm" @submit.native.prevent>
+                    <el-form-item label="名称" prop="name" @keyup.enter.native="addCommodity()">
+                        <el-input type="text" v-model="formData.name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="价格" prop="price" @keyup.enter.native="addCommodity()">
+                        <el-input type="text" v-model="formData.price"></el-input>
+                    </el-form-item>
+                    <el-form-item label="描述" prop="describe" @keyup.enter.native="addCommodity()">
+                        <el-input type="text" v-model="formData.describe"></el-input>
+                    </el-form-item>
+                    <el-form-item label="关键字" prop="keyWord" @keyup.enter.native="addCommodity()">
+                        <el-input type="text" v-model="formData.keyWord"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="addCommodity()">添加</el-button>
+                        <el-button @click="resetForm('addForm')">重置</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-dialog>
+            <el-dialog title="编辑商品分类信息" :visible.sync="dialogTableVisible4edit">
+                <el-form :model="editFormData" :rules="rules" ref="editForm" label-width="100px" class="demo-ruleForm" @submit.native.prevent>
+                    <el-form-item label="名称" prop="name" @keyup.enter.native="updateCommodity()">
+                        <el-input type="text" v-model="editFormData.name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="价格" prop="price" @keyup.enter.native="updateCommodity()">
+                        <el-input type="text" v-model="editFormData.price"></el-input>
+                    </el-form-item>
+                    <el-form-item label="描述" prop="describe" @keyup.enter.native="updateCommodity()">
+                        <el-input type="text" v-model="editFormData.describe"></el-input>
+                    </el-form-item>
+                    <el-form-item label="关键字" prop="keyWord" @keyup.enter.native="updateCommodity()">
+                        <el-input type="text" v-model="editFormData.keyWord"></el-input>
+                    </el-form-item>
+                    <el-form-item align="right">
+                        <el-button type="warning" @click="updateCommodity()">修改</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-dialog>
+    </div>
+</body>
+<script>
+    new Vue({
+    el:"#main",
+    data:{
+        categoryid:0,
+        tableData:[],
+        formData:{},
+        editFormData:{},
+        dialogTableVisible4add:false,
+        dialogTableVisible4edit:false,
+        maxRange:10000,
+        value:[0, 10000],
+        formSearch:{},
+        rules: {
+            name: [
+                {required: true, message: "请输入名称", trigger: 'blur'}
+            ],
+            price: [
+                {required: true, message: "请输入价格", trigger: 'blur'}
+            ],
+            describe: [
+                {required: true, message: "请输入描述", trigger: 'blur'}
+            ],
+            keyWord: [
+                {required: true, message: "请输入关键字", trigger: 'blur'}
+            ]
+        },
+        rules1: {
+            name: [
+                {required: true, message: "请输入名称", trigger: 'blur'}
+            ]
+        }
+    },
+    mounted:function (){
+        var temp = this;
+        window.addEventListener('message', function(messageEvent) {
+            temp.categoryid = messageEvent.data;
+            temp.findAll();
+        }, false);
+    },
+    methods:{
+        findAll:function (){
+            axios.post("CommodityServlet","method=findAll" + "&categoryid=" + this.categoryid)
+                .then(resp => {
+                    this.tableData = resp.data;
+                });
+        },
+        showAddCommodity:function (){
+            this.dialogTableVisible4add = true;
+        },
+        showEditCommodity:function (row){
+            this.dialogTableVisible4edit = true;
+            this.editFormData={
+                name:row.name,
+                id:row.id,
+                price:row.price,
+                describe:row.describe,
+                keyWord:row.keyWord,
+            };
+        },
+        updateCommodity:function (){
+            this.$refs['editForm'].validate((valid) => {
+                if (valid) {
+                    var param = "method=updateCommodity&name=" + this.editFormData.name + "&id="
+                        + this.editFormData.id + "&price=" + this.editFormData.price + "&describe="
+                        + this.editFormData.describe + "&keyWord=" + this.editFormData.keyWord + "&categoryid="
+                        + this.categoryid;
+                    axios.post("CommodityServlet", param)
+                        .then(resp => {
+                            this.tableData = resp.data;
+                        });
+                    this.dialogTableVisible4edit = false;
+                    this.searchReset();
+                }
+            })
+        },
+        addCommodity:function (){
+            this.$refs['addForm'].validate((valid) => {
+                if (valid) {
+                    var param = "method=addCommodity&name=" + this.formData.name + "&price=" + this.formData.price + "&describe="
+                        + this.formData.describe + "&keyWord=" + this.formData.keyWord + "&categoryid=" + this.categoryid;
+                    axios.post("CommodityServlet", param)
+                        .then(resp => {
+                            this.tableData = resp.data;
+                        });
+                    this.dialogTableVisible4add = false;
+                    this.searchReset();
+                }
+            })
+        },
+        deleteCommodity:function (row){
+            if(confirm("您确定要删除这个商品吗？")){
+                var param = "method=deleteCommodity&id=" + row.id + "&categoryid=" + this.categoryid;
+                axios.post("CommodityServlet", param)
+                    .then(resp => {
+                        this.tableData = resp.data;
+                    });
+                this.searchReset();
+            }
+        },
+        priceSearch:function (){
+            axios.post("CommodityServlet","method=priceSearch" + "&categoryid=" + this.categoryid + "&minPrice=" + this.value[0] + "&maxPrice=" + this.value[1])
+                .then(resp => {
+                    this.tableData = resp.data;
+                });
+        },
+        nameSearch:function (){
+            this.$refs['formSearch'].validate((valid) => {
+                if (valid) {
+                    axios.post("CommodityServlet","method=nameSearch" + "&categoryid=" + this.categoryid + "&name=" + this.formSearch.name)
+                        .then(resp => {
+                            this.tableData = resp.data;
+                        });
+                }
+            })
+        },
+        searchReset:function (){
+            this.findAll();
+            this.value = [0, 100000];
+            this.formSearch = [];
+            this.$refs['formSearch'].resetFields();
+        },
+        resetForm:function (addForm){
+            this.formData = [];
+            this.$refs[addForm].resetFields();
+        }
+    }
+  });
+</script>
+</html>

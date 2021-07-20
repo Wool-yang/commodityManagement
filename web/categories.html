@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+  <script src="js/vue.js"></script>
+  <script src="element-ui/lib/index.js"></script>
+  <script src="js/axios.min.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC&amp;display=swap" rel="stylesheet">
+  <style>
+    *{
+      font-family: 'Noto Serif SC', serif;
+    }
+  </style>
+</head>
+<body>
+<div id = "main">
+  <b style="color: steelblue; font-size: 30px">商品分类</b>
+  <div style="float: right">
+    <el-button type="primary" @click="showAddCategory()">添加分类</el-button>
+  </div>
+  <el-table :data="tableData">
+    <el-table-column prop="name" label="分类名称" width="800">
+    </el-table-column>
+    <el-table-column label="操作" width="270">
+      <template slot-scope="props">
+        <el-button type="warning" @click="showEditCategory(props.row)">编辑</el-button>
+        <el-button type="danger" @click="deleteCategory(props.row)">删除</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+  <el-dialog title="添加商品分类" :visible.sync="dialogTableVisible4add" @close="resetForm('addForm')">
+    <el-form :model="formData" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm" @submit.native.prevent>
+      <el-form-item label="分类名称" prop="name" @keyup.enter.native="addCategory()">
+        <el-input type="text" v-model="formData.name"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="addCategory()">添加</el-button>
+        <el-button @click="resetForm('addForm')">重置</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+  <el-dialog title="编辑商品分类信息" :visible.sync="dialogTableVisible4edit">
+    <el-form :model="editFormData" :rules="rules" ref="editForm" label-width="100px" class="demo-ruleForm" @submit.native.prevent>
+      <el-form-item label="分类名称" prop="name" @keyup.enter.native="updateCategory()">
+        <el-input type="text" v-model="editFormData.name"></el-input>
+      </el-form-item>
+      <el-form-item align="right">
+        <el-button type="warning" @click="updateCategory()">修改</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+</div>
+</body>
+<script>
+  new Vue({
+    el:"#main",
+    data:{
+      tableData:[],
+      formData: {},
+      editFormData: {},
+      dialogTableVisible4add:false,
+      dialogTableVisible4edit:false,
+      rules: {
+        name: [
+          {required: true, message: "请输入分类名", trigger: 'blur'}
+        ]
+      }
+    },
+    mounted:function (){
+      this.findAll()
+    },
+    methods:{
+      findAll:function (){
+        axios.post("CategoriesServlet","method=findAll")
+                .then(resp => {
+                  this.tableData = resp.data;
+                });
+      },
+      showAddCategory:function (){
+        this.dialogTableVisible4add = true;
+      },
+      showEditCategory:function (row){
+        this.dialogTableVisible4edit = true;
+        this.editFormData={
+          name:row.name,
+          id:row.id
+        };
+      },
+      updateCategory:function (){
+        this.$refs['editForm'].validate((valid) => {
+          if (valid) {
+            var param = "method=updateCategory&name=" + this.editFormData.name + "&id=" + this.editFormData.id;
+            axios.post("CategoriesServlet", param)
+                    .then(resp => {
+                      this.tableData = resp.data;
+                    });
+            this.dialogTableVisible4edit = false;
+            this.sendMessageToParent();
+          }
+        })
+      },
+      addCategory:function (){
+        this.$refs['addForm'].validate((valid) => {
+          if (valid) {
+            var param = "method=addCategory&name=" + this.formData.name;
+            axios.post("CategoriesServlet", param)
+                    .then(resp => {
+                      this.tableData = resp.data;
+                    });
+            this.dialogTableVisible4add = false;
+            this.sendMessageToParent();
+          }
+        })
+      },
+      deleteCategory:function (row){
+        if(confirm("您确定要删除这个分类吗，删除后该分类下所有商品也会被删除！")){
+          var param = "method=deleteCategory&id=" + row.id;
+          axios.post("CategoriesServlet", param)
+                  .then(resp => {
+                    this.tableData = resp.data;
+                  });
+        }
+        this.sendMessageToParent();
+        this.sendMessageToParent();
+      },
+      resetForm:function (addForm){
+        this.formData = [];
+        this.$refs[addForm].resetFields();
+      },
+      sendMessageToParent:function (){
+        top.postMessage("changeCategories", "*");
+      }
+    }
+  });
+</script>
+</html>

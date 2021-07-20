@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理系统登录</title>
+    <link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+    <script src="js/vue.js"></script>
+    <script src="element-ui/lib/index.js"></script>
+    <script src="js/axios.min.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC&amp;display=swap" rel="stylesheet">
+    <style>
+        *{
+            font-family: 'Noto Serif SC', serif;
+        }
+        .login-box {
+            border: 1px solid #DCDFE6;
+            width: 450px;
+            margin: 120px auto;
+            padding: 35px 35px 15px 35px;
+            border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            box-shadow: 0 0 25px #909399;
+        }
+
+        .login-title {
+            text-align: center;
+            margin: 0 auto 40px auto;
+            color: #303133;
+        }
+    </style>
+</head>
+<body>
+    <div id = "main">
+        <el-form ref="form" :model="form" :rules="rules" label-width="80px" class="login-box">
+            <h3 class="login-title">欢迎登录商品目录管理系统</h3>
+            <el-form-item label="账号" prop="name" @keyup.enter.native="submit('form')">
+                <el-input type="text" v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" prop="password" @keyup.enter.native="submit('form')">
+                <el-input type="password" v-model="form.password"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="submit('form')">登录</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+</body>
+<script>
+    new Vue({
+      el:"#main",
+      data:{
+        form:{
+          name:"",
+          password:""
+        },
+        rules:{
+            name:[
+                {required:true, message:"请输入用户名",trigger:'blur'}
+            ],
+            password:[
+                {required:true, message:"请输入密码",trigger:'blur'}
+            ]
+        }
+      },
+      methods:{
+        submit:function (form){
+            this.$refs[form].validate((valid) => {
+                if(valid){
+                    axios.post("LoginServlet","method=login&name=" + this.form.name + "&password=" + this.form.password)
+                        .then(resp => {
+                            if(resp.data == true)
+                                location.href = "index.html";
+                            else {
+                                alert("请输入正确的账号密码!");
+                                location.href = "login.html";
+                            }
+                        });
+                }
+                else{
+                    return false;
+                }
+            })
+        }
+      }
+    });
+</script>
+</html>
