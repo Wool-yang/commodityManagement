@@ -32,7 +32,7 @@
             </el-slider>
             <el-form :inline="true" class="demo-form-inline" style="float: left; margin-left: 50px">
                 <el-form-item label="修改价格上限">
-                    <el-input type="text" v-model="maxRange"></el-input>
+                    <el-input type="text" v-model="maxRange" style="width: 200px"></el-input>
                 </el-form-item>
             </el-form>
             <el-form :inline="true" :rules="rules1" ref="formSearch" :model="formSearch" class="demo-form-inline" style="float: right" @submit.native.prevent>
