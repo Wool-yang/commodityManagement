@@ -18,7 +18,7 @@
 <body>
     <div id = "main">
         <b style="color: steelblue; font-size: 30px">商品列表</b>
-        <div style="float: right">
+        <div style="float: right; margin-right: 30px">
             <el-button type="primary" @click="showAddCommodity()">添加商品</el-button>
         </div>
         <div style="width: 1150px; height: 70px;">
@@ -30,6 +30,11 @@
                     style="width: 963px; margin-left: 100px"
                     @change="priceSearch()">
             </el-slider>
+            <el-form :inline="true" class="demo-form-inline" style="float: left; margin-left: 50px">
+                <el-form-item label="修改价格上限">
+                    <el-input type="text" v-model="maxRange"></el-input>
+                </el-form-item>
+            </el-form>
             <el-form :inline="true" :rules="rules1" ref="formSearch" :model="formSearch" class="demo-form-inline" style="float: right" @submit.native.prevent>
                 <el-form-item label="输入商品名查询商品" prop="name" @keyup.enter.native="nameSearch()">
                     <el-input type="text" v-model="formSearch.name"></el-input>

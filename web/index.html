@@ -110,11 +110,10 @@
                 this.iframeSrc = "list.html";
                 const mapFrame = this.$refs['iframe'];
                 mapFrame.contentWindow.location.reload();
-                if (mapFrame.attachEvent) { // 兼容浏览器判断
+                if (mapFrame.attachEvent) {
                     mapFrame.attachEvent('onload', function() {
                         const iframeWin = mapFrame.contentWindow
                         iframeWin.postMessage(id, '*')
-                        // data传递的参数   *写成子页面的域名或者是ip
                     })
                 } else {
                     mapFrame.onload = function() {
