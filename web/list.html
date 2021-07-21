@@ -204,6 +204,7 @@
                 .then(resp => {
                     this.tableData = resp.data;
                 });
+            this.nameSearchReset();
         },
         nameSearch:function (){
             this.$refs['formSearch'].validate((valid) => {
@@ -214,11 +215,19 @@
                         });
                 }
             })
+            this.priceSearchReset();
+        },
+        nameSearchReset:function (){
+            this.formSearch = [];
+            this.$refs['formSearch'].resetFields();
+        },
+        priceSearchReset:function (){
+            this.value = [0, 100000];
         },
         searchReset:function (){
             this.findAll();
-            this.value = [0, 100000];
             this.formSearch = [];
+            this.value = [0, 100000];
             this.$refs['formSearch'].resetFields();
         },
         resetForm:function (addForm){
