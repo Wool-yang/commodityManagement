@@ -27,15 +27,13 @@
                     v-model="value"
                     range
                     :max=maxRange
-                    style="width: 963px; margin-left: 100px"
+                    style="width: 997px; margin-left: 90px"
                     @change="priceSearch()">
             </el-slider>
-            <el-form :inline="true" class="demo-form-inline" style="float: left; margin-left: 50px">
+            <el-form :inline="true" :rules="rules1" ref="formSearch" :model="formSearch" class="demo-form-inline" style="float: right;margin-right: 47px" @submit.native.prevent>
                 <el-form-item label="修改价格上限">
-                    <el-input type="text" v-model="maxRange" style="width: 200px"></el-input>
+                    <el-input type="text" v-model="maxRange" style="margin-right: 20px;width: 200px"></el-input>
                 </el-form-item>
-            </el-form>
-            <el-form :inline="true" :rules="rules1" ref="formSearch" :model="formSearch" class="demo-form-inline" style="float: right" @submit.native.prevent>
                 <el-form-item label="输入商品名查询商品" prop="name" @keyup.enter.native="nameSearch()">
                     <el-input type="text" v-model="formSearch.name"></el-input>
                 </el-form-item>
